@@ -26,23 +26,58 @@ async function run() {
     // Connect the client to the server	(optional starting in v4.7)
     await client.connect();
     const productCollection = client.db('productDB').collection('product')
+    const addedCard = client.db('addCardDB').collection('addCard')
 
-    app.get('/:brand', async(req, res)=>{
-        const cursor = productCollection.find()
-        const result = await cursor.toArray()
-        res.send(result)
+    app.get('/brand', async (req, res) => {
+      const cursor = productCollection.find()
+      const result = await cursor.toArray()
+      res.send(result)
     })
-    app.get('/brand/:id', async(req, res)=>{
+
+    app.get('/myCard', async(req, res)=>{
+      const cardFind= addedCard.find()
+      const result = await cardFind.toArray()
+      res.send(result)
+    })
+
+    app.put('/updateCard/:id', async (req, res) => {
       const id = req.params.id;
-      const query = {_id: new ObjectId(id)}
+      const filter = { _id: new ObjectId(id) }
+      const option = { upsert: true }
+      const updateCard = req.body
+      const card = {
+        $set: {
+          name: updateCard.name,
+          brand: updateCard.brand,
+          type: updateCard.type,
+          photo: updateCard.photo,
+          price: updateCard.price,
+          rating: updateCard.rating,
+          description: updateCard.description
+        }
+      }
+      const result = await productCollection.updateOne(filter, card, option)
+      res.send(result)
+    })
+
+    app.get('/updateCard/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) }
       const result = await productCollection.findOne(query)
       res.send(result)
     })
 
-    app.post('/:brand', async(req, res)=>{
-        const newProduct = req.body;
-        const result = await productCollection.insertOne(newProduct)
-        res.send(result)
+    app.post('/myCard', async (req, res) => {
+      const addToCard = req.body;
+      const result = await addedCard.insertOne(addToCard)
+      res.send(result)
+    })
+
+
+    app.post('/brand', async (req, res) => {
+      const newProduct = req.body;
+      const result = await productCollection.insertOne(newProduct)
+      res.send(result)
     })
 
 
@@ -57,8 +92,8 @@ async function run() {
 run().catch(console.dir);
 
 
-app.get('/', (req, res)=>{
-    res.send('tech and elec server is running')
+app.get('/', (req, res) => {
+  res.send('tech and elec server is running')
 })
 
 app.listen(port)

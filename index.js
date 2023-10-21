@@ -40,6 +40,13 @@ async function run() {
       res.send(result)
     })
 
+    app.delete('/myCard/:_id', async(req,res) =>{
+      const id = req.params._id;
+      const query=  {_id: new ObjectId(id)}
+      const result = await addedCard.deleteOne(query)
+      res.send(result)
+    })
+
     app.put('/updateCard/:id', async (req, res) => {
       const id = req.params.id;
       const filter = { _id: new ObjectId(id) }
